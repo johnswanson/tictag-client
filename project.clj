@@ -13,7 +13,7 @@
                  [clj-time "0.12.2"]
                  [environ "1.1.0"]
                  [reloaded.repl "0.2.3"]
-                 [tictagapi "0.1.0-SNAPSHOT"]]
+                 [org.clojars.jds02006/tictagapi "0.1.0-SNAPSHOT"]]
   :main ^:skip-aot tictag-client.core
   :repl-options {:init-ns user}
   :target-path "target/%s"
