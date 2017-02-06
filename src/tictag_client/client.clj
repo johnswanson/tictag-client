@@ -54,7 +54,8 @@
                         :body (pr-str {:tags tags
                                        :secret secret
                                        :local-time
-                                       (utils/local-time time)})})]
+                                       (utils/local-time-from-long
+                                        (tc/to-long time))})})]
     (if (= status 200)
       (play! "/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg")
       (do

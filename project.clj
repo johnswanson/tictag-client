@@ -14,7 +14,7 @@
                  [environ "1.1.0"]
                  [reloaded.repl "0.2.3"]
                  [org.clojars.jds02006/tictagapi "0.1.0-SNAPSHOT"]]
-  :main ^:skip-aot tictag-client.core
+  :main ^:skip-aot tictag-client.main
   :repl-options {:init-ns user}
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}
