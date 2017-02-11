@@ -12,15 +12,12 @@
             [clj-time.core :as t]
             [clj-time.local]
             [tictag-client.utils :as utils]
-            [clojure.edn :as edn]))
-
-(with-programs [play]
-  (defn play! [sound]
-    (play sound)))
-
+            [tictag-client.sound :as sound]
+            [clojure.edn :as edn]
+            [clojure.java.io :as io]))
 
 (defn get-one-line [prompt tag-list]
-  (play! "/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg")
+  (sound/play! (io/resource "sounds/ping.wav"))
   (with-programs [dmenu]
     (try
       (dmenu "-i"
@@ -57,9 +54,9 @@
                                        (utils/local-time-from-long
                                         (tc/to-long time))})})]
     (if (= status 200)
-      (play! "/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg")
+      (timbre/debugf "Successful PUT to server! %s" response)
       (do
-        (play! "/usr/share/sounds/ubuntu/stereo/dialog-error.ogg")
+        (sound/play! (io/resource "sounds/error.wav"))
         (timbre/errorf "Error response from server: %s" response)))))
 
 (defrecord ClientChimer [config]
