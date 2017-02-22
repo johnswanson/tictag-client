@@ -4,7 +4,9 @@
 (defn play! [resource]
   (let [input-stream (javax.sound.sampled.AudioSystem/getAudioInputStream resource)
         clip         (javax.sound.sampled.AudioSystem/getClip)]
-    (doto clip
-      (.open input-stream)
-      (.start))))
+    (try (doto clip
+           (.open input-stream)
+           (.start))
+         (catch javax.sound.sampled.LineUnavailableException e
+           nil))))
 
