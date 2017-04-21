@@ -2,5 +2,5 @@
   (:require [environ.core :refer [env]]))
 
 (def config
-  {:remote-url    (env :tictag-server-url)
-   :shared-secret (env :tictag-shared-secret)})
+  {:remote-url (env :tictag-server-url)
+   :token      (env :tictag-token)})

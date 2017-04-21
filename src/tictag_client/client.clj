@@ -42,17 +42,14 @@
           (str/split #"[ ,]")
           (set)))))
 
-(defn send-tags-to-server [server-url secret time tags]
+(defn send-tags-to-server [server-url token time tags]
   (let [{status :status :as response}
-        @(http/request {:method :put
+        @(http/request {:method  :put
                         :timeout 3000
-                        :url (str server-url "/time/" (tc/to-long time))
-                        :headers {"Content-Type" "application/edn"}
-                        :body (pr-str {:tags tags
-                                       :secret secret
-                                       :local-time
-                                       (utils/local-time-from-long
-                                        (tc/to-long time))})})]
+                        :url     (str server-url "/time/" (tc/to-long time))
+                        :headers {"Content-Type"  "application/edn"
+                                  "Authorization" token}
+                        :body    (pr-str {:tags tags})})]
     (if (= status 200)
       (timbre/debugf "Successful PUT to server! %s" response)
       (do
@@ -64,24 +61,24 @@
   (start [component]
     (timbre/debug "Beginning client chimer")
     (timbre/debugf "Fetching config from remote [%s]..." (:remote-url config))
-    (let [shared-secret (:shared-secret config)
+    (let [{:keys [token]}                    config
           {:keys [tagtime-seed tagtime-gap]} (-> (format "%s/config" (:remote-url config))
-                                                 (http/get {:as :text})
+                                                 (http/get {:as :text :headers {"Authorization" token}})
                                                  deref
                                                  :body
                                                  edn/read-string)
-          _ (timbre/debugf "Received configuration from remote. Gap: %s, seed: %s" tagtime-gap tagtime-seed)
-          tagtime (tagtime/tagtime tagtime-gap tagtime-seed)
-          chimes (chime-ch
-                  (:pings tagtime)
-                  {:ch (a/chan (a/dropping-buffer 1))})]
+          _                                  (timbre/debugf "Received configuration from remote. Gap: %s, seed: %s" tagtime-gap tagtime-seed)
+          tagtime                            (tagtime/tagtime tagtime-gap tagtime-seed)
+          chimes                             (chime-ch
+                                              (:pings tagtime)
+                                              {:ch (a/chan (a/dropping-buffer 1))})]
       (go-loop []
         (when-let [time (<! chimes)]
           (timbre/debug "Pinging client")
           (when-let [tags (request-tags
                            (format "[%s] PING!"
                                    (utils/local-time time)))]
-            (send-tags-to-server (:remote-url config) shared-secret time tags))
+            (send-tags-to-server (:remote-url config) token time tags))
           (recur)))
       (assoc component :stop #(a/close! chimes))))
   (stop [component]
