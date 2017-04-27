@@ -71,14 +71,17 @@
           tagtime                            (tagtime/tagtime tagtime-gap tagtime-seed)
           chimes                             (chime-ch
                                               (:pings tagtime)
-                                              {:ch (a/chan (a/dropping-buffer 1))})]
+                                              {:ch (a/chan (a/sliding-buffer 1))})]
       (go-loop []
         (when-let [time (<! chimes)]
           (timbre/debug "Pinging client")
-          (when-let [tags (request-tags
-                           (format "[%s] PING!"
-                                   (utils/local-time time)))]
-            (send-tags-to-server (:remote-url config) token time tags))
+          (let [seconds (t/in-seconds (t/interval time (t/now)))]
+            ;; if we missed it by >3 minutes, don't pop it up
+            (when (< seconds (* 60 3))
+              (when-let [tags (request-tags
+                               (format "[%s] PING! (%d seconds ago)"
+                                       (utils/local-time time) seconds))]
+                (send-tags-to-server (:remote-url config) token time tags))))
           (recur)))
       (assoc component :stop #(a/close! chimes))))
   (stop [component]
