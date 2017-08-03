@@ -46,7 +46,7 @@
   (let [{status :status :as response}
         @(http/request {:method  :put
                         :timeout 3000
-                        :url     (str server-url "/time/" (tc/to-long time))
+                        :url     (str server-url "/api/ping-by-ts" (tc/to-long time))
                         :headers {"Content-Type"  "application/edn"
                                   "Authorization" token}
                         :body    (pr-str {:tags tags})})]
@@ -62,8 +62,10 @@
     (timbre/debug "Beginning client chimer")
     (timbre/debugf "Fetching config from remote [%s]..." (:remote-url config))
     (let [{:keys [token]}                    config
-          {:keys [tagtime-seed tagtime-gap]} (-> (format "%s/config" (:remote-url config))
-                                                 (http/get {:as :text :headers {"Authorization" token}})
+          {:keys [tagtime-seed tagtime-gap]} (-> (format "%s/api/config" (:remote-url config))
+                                                 (http/get {:as :text
+                                                            :headers {"Authorization" token
+                                                                      "Accept" "application/edn"}})
                                                  deref
                                                  :body
                                                  edn/read-string)
