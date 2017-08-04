@@ -38,18 +38,16 @@
     (when (seq response-str)
       (-> response-str
           (subs 0 (dec (count response-str)))
-          (str/lower-case)
-          (str/split #"[ ,]")
-          (set)))))
+          (str/lower-case)))))
 
 (defn send-tags-to-server [server-url token time tags]
   (let [{status :status :as response}
         @(http/request {:method  :put
                         :timeout 3000
-                        :url     (str server-url "/api/ping-by-ts" (tc/to-long time))
+                        :url     (format "%s/api/ping-by-ts/%d" server-url (tc/to-long time))
                         :headers {"Content-Type"  "application/edn"
                                   "Authorization" token}
-                        :body    (pr-str {:tags tags})})]
+                        :body    (pr-str {:ping/tags tags})})]
     (if (= status 200)
       (timbre/debugf "Successful PUT to server! %s" response)
       (do
