@@ -42,12 +42,12 @@
 
 (defn send-tags-to-server [server-url token time tags]
   (let [{status :status :as response}
-        @(http/request {:method  :put
+        @(http/request {:method  :post
                         :timeout 3000
-                        :url     (format "%s/api/ping-by-ts/%d" server-url (tc/to-long time))
+                        :url     (format "%s/api/ping" server-url)
                         :headers {"Content-Type"  "application/edn"
                                   "Authorization" token}
-                        :body    (pr-str {:ping/tags tags})})]
+                        :body    (pr-str {:ping/tags tags :ping/ts (tc/to-long time)})})]
     (if (= status 200)
       (timbre/debugf "Successful PUT to server! %s" response)
       (do
